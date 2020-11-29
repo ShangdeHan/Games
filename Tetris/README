@@ -1,0 +1,110 @@
+The purpose of this assignment is to give you some experience working with inheritance and
+abstract classes in a realistic setting. You'll also get some more practice with 2D arrays and lists.
+Overview
+In this project you will complete the implementation of a Tetris-style or “falling blocks” type of
+video game. This particular game, which we’ll call BlockAddiction, is a sort of a mix of Tetris
+with a game like "Bejeweled". If you are not familiar with such games, examples are not hard to
+find on the internet.
+The basic idea is as follows. The game is played on a 2D grid. Each position in this grid can be
+represented as a (row, column) pair. We typically represent these positions using the simple class
+api.Position, which you'll find in the api package. At any stage in the game, a grid position
+may be empty (null) or may be occupied by an icon (i.e., a colored block), represented by the
+class api.Icon. In addition, a piece or shape made up of a combination of icons falls from the
+top of the grid. This is referred to as the current piece or current shape. As it falls, the current
+piece can be
+• shifted from side to side
+• transformed, which may rotate or flip it or something else
+• cycled, which will change the relative positions of the icons within the piece, without
+changing the cells it occupies
+When the currently falling piece can’t fall any further, its icons are added to the grid, and the
+game checks whether it has completed a collapsible set. In BlockAddiction, a collapsible
+set is formed of three or more adjacent icons that match (have the same color). All icons in a
+collapsible set are then removed from the grid, and icons above them are shifted down an
+equivalent amount. (Note that there is no "gravity" and there can be empty spaces remaining
+below an icon in the grid.) The new icon positions may form new collapsible sets, so the
+game will iterate this process until there are no more collapsible sets. This behavior is already
+implemented in the class AbstractBlockGame, and your main task is to implement the
+abstract method determineCellsToCollapse(), which finds the positions in collapsible sets.
+Figure 1: An LPiece falling, and the collapsible set of three matching adjacent
+red icons disappears, and the blocks above them shift down.
+Specification
+The specification for this assignment includes
+• this pdf,
+• any "official" clarifications posted on Piazza, and
+• the online javadoc
+The Piece interface and the five concrete Piece types
+See the javadoc for the Piece interface.
+The currently falling piece is represented by an object that implements the Piece interface. Each
+piece has a state consisting of:
+• The position in the grid of the upper-left corner of its bounding square, represented as
+an instance of Position (which can change as a result of calling methods such as
+shiftLeft(), shiftRight(), or transform()).
+• The icons that make up the piece, along with their relative positions within the
+bounding square.
+The position of a piece within a grid is always described by the upper left corner of its bounding
+square. Most importantly, there is a getCellsAbsolute() method that enables the caller to
+obtain the actual positions, within the grid, of the icons in the piece. The individual icons in the
+piece are represented by an array of Cell objects, a simple type that encapsulates a Position
+and an Icon. A Position is just a (row, column) pair, and an Icon just represents a colored
+block.
+For example, one of the concrete Piece classes you will implement is call the LPiece. One is
+shown below in its initial (non-transformed) configuration. The method getCells() returns
+four cell objects with the positions relative to the upper left corner of the bounding square,
+namely (0, 0), (0, 1), (1, 1), and (2, 1), in that order, where the ordered pairs represent (row,
+column), NOT (x, y). (The colors are shown for illustration, and are normally assigned
+randomly by the generator for the game.) Suppose also that the piece's position (upper left
+corner of bounding square) is row 2, column 3. Then the getCellsAbsolute() method
+should return an array of four cell objects with positions (2, 3), (2, 4), (3, 4), and (4, 4), in that
+order.
+If the method shiftRight() is called on this piece, the position is updated, but getCells()
+would still return the same cells, since the positions are relative to the upper left corner. But
+the getCellsAbsolute() method would now return (2, 4), (2, 5), (3, 5), and (4, 5).
+Each piece defines a particular behavior associated with the transform() operation. For the
+LPiece, the transform() operation just flips it across its vertical centerline. The position of
+the bounding square does not change, but the positions of the cells within the bounding square
+are modified, as shown below. This time the getCells() method should return an array of
+cells with positions (0, 2), (0, 1), (1, 1), and (2, 1), and the getCellsAbsolute() method
+should return an array of four cell objects with positions (2, 5), (2, 4), (3, 4), and (4, 4), in that
+order.
+Likewise, if the cycle() method is invoked, the positions for the cells stay the same but the
+icons associated with the cells will change. The illustration below shows the result of
+invoking cycle() on the first figure:
+Each icon shifts forward to the next cell, and the last icon is placed in the first cell. (The
+ordering of the cells always the same, even if transformed.)
+Altogether you will need to create five concrete classes, described below, that (directly or
+indirectly) extend AbstractPiece and, therefore, implement the Piece interface. It is up to you
+to decide how to design these classes, but a portion of your grade will be based on how well you
+use inheritance to avoid duplicated code. Remember that in the descriptions below, an ordered
+pair is (row, column), NOT (x, y):
+1. The one illustrated above, called the LPiece. Initially the icons are at (0, 0), (0, 1), (1, 1), and
+(2, 1), in that order. The transform() method flips the cells across the vertical centerline.
+2. The IPiece, which has a 3 x 3 bounding square with the icons down the center in the
+order (0, 1), (1, 1), and (2, 1). For IPiece, the transform() method does nothing
+3. The DiagonalPiece, which has a 2 x 2 bounding square, shown below with its initial
+configuration on the left. The icon positions are in the order (0, 0), (1, 1). The transform()
+method flips the cells across the vertical centerline, as shown on the right (same as for the
+LPiece).
+4. The CornerPiece, which has a 2 x 2 bounding square and initial cell positions (0, 0), (1, 0),
+and (1, 1) in that order. The transform() method performs a kind of rotation through four
+different states as shown below, e.g., after calling transform() once, the cell positions are
+(0, 1), (0, 0), and (1, 0), and after calling transform() four times they are back in the initial
+positions.
+5. The SnakePiece, which has a 3 x 3 bounding square and initial cell positions (0, 0),
+(1, 0), (1, 1), and (1, 2) in that order. The transform() method transitions through twelve
+different states and back to the original, following a snake-like pattern as shown below
+(reading left-to-right and top-to-bottom):
+When you implement these five concrete types, pay careful attention to code reuse, and
+implement common code in an abstract superclass called AbstractPiece. Part of your
+score will be based on how well you have taken advantage of inheritence to reduce
+code duplication among the three concrete types.
+Each of these types has a constructor that takes an initial position and an array of Icon
+objects:
+public CornerPiece(Position position, Icon[] icons)
+public DiagonalPiece(Position position, Icon[] icons)
+public IPiece(Position position, Icon[] icons)
+public LPiece(Position position, Icon[] icons)
+public SnakePiece(Position position, Icon[] icons)
+The given icon objects are placed in the initial cells in the order given. Each constructor should
+throw IllegalArgumentException if the given array is not the correct length.
+There are some additional notes below about implementing transform() for the SnakePiece
+and for implementing clone().
