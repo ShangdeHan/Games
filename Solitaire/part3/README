@@ -1,0 +1,94 @@
+1 Summary
+For the third part of the project, you must read an input file that describes a game configuration (possibly
+in the middle of a game). If the input file is valid, then you must find a sequence of moves that will advance
+the game configuration to a winning state, or indicate that the game is not winnable. For this part of the
+project, all source code must be C or C++.
+Specifically, your Makefile must build your check executable from part 1, your advance executable from
+part 2, and a new executable named winnable. Program winnable should accept the following optional
+command-line switches and arguments, which may appear any number of times and in any order. If two
+or more switches conflict with each other, the last switch takes precedence. You may implement additional
+switches, for example to display debugging information, if you wish.
+• Switch -m N, indicating that the search should be limited to sequences of at most N moves. If omitted,
+the default value of N is 1000 (this value is extremely large).
+• Switch -c, indicating that a hash table cache should be used during the search (discussed in detail
+below). This switch is extra credit.
+• Switch -f, indicating that safe moves to the foundations should be forced if they are available (discussed
+in detail below). This switch is extra credit.
+• Switch -v, indicating verbose mode. If this switch is given, you are strongly encouraged to display
+diagnostic information to stderr periodically, so the TAs know that your code is not stuck in an
+infinite loop.
+At most one filename argument may be passed, in any position. When testing your executable, we will
+not use filenames that begin with a ’-’ character. If no filename is given, the program should read from
+standard input (just like program check in part 1).
+2 Determining if a game is winnable
+For any game configuration, we say that a sequence of moves is a winning sequence of length N if, the sequence
+contains N moves, and starting from the game configuration, we can play each move in the sequence in order
+(it is a valid move), and at the end of the sequence, the game state satisfies the winning condition (see
+below). The goal of the program is to find a winning sequence of length N where N is not greater than the the
+maximum number of moves specified. If no such sequence exists, then your program should indicate this.
+Otherwise, your program should display one of the winning sequences. You do not need to find a shortest
+sequence.
+2.1 Winning condition
+Technically, a solitaire game is won when all cards are in the foundations. However, a game is guaranteed to
+be winnable if there are no covered cards, no stock cards, and at most one waste card. This should be the
+condition that you search for.
+1
+2.2 Depth first search
+One way to examine all sequences of moves is to use depth first search. This can be done using recursion:
+given a game configuration, check all the single moves from that game configuration. If a move is valid,
+then this leads to a new game configuration; check that one recursively. The maximum number of moves
+is used to limit the depth of the recursion. If a winning game configuration is found, the recursion can be
+terminated, but this must be done carefully so that the winning sequence of moves just discovered can be
+written to standard output.
+This is a brute-force approach that will work, but is not very computationally efficient, because the
+number of sequences to check can be huge.
+2.3 Using a cache (-c switch: optional)
+One of the problems of using the straightforward depth-first search is that, many different sequences may lead
+to the same game configuration. For example, if moves 2->f, 4->f, and 7->f are all valid moves, then doing
+these in any order will lead to the same game configuration. Determining if the same game configuration is
+winnable within m moves, several times, leads to unnecessarily long computation times.
+To fix this, one could use a hash table of game configurations (along with number of moves checked) to
+keep track of game configurations that were already checked: if we already know that game configuration G
+is not winnable within m moves, then we do not need to check again that G is winnable within n moves if
+n ≤ m.
+Doing this well means using a large (say, 10 million entries) hash table and finding a good hash function
+for game configurations. If two game configurations hash to the same location, it is reasonable to discard
+the older one. In this sense the hash table acts as a cache.
+2.4 Forcing moves to the foundations (-f switch: optional)
+Another way to reduce computation time is to reduce the number of choices of moves. But this must be
+done in such a way that we can still check if a game is winnable. Forcing moves to the foundations, if done
+correctly, can reduce the number of move choices and not affect if a winnable sequence can be found. It may,
+however, affect the length of the winnable sequence.
+We say it is safe to move a card to the foundations if (1) the card is not being moved from the waste pile,
+unless we are turning 1 card over at a time; and (2) the current rank of the foundation suit we are adding
+to is at least as large as the ranks of the foundation cards on the opposite color. For example, it is safe to
+move 7s to the foundations from the tableau, if the hearts and diamonds foundations have rank 6 or higher
+(because the current top of spades must be 6s). If (say) the hearts foundation has top card 5h, then it is not
+safe to move 7s because we might need the 7s in the tableau so we could play the 6h on it. Some versions
+of computer solitaire will automatically move cards to the foundations using this kind of rule.
+The -f switch should force safe moves to the foundations. Note that these moves must still be included
+in the move sequence. While this reduces the search space for a particular move depth, it could increase
+the number of moves required to win, because building up the foundations might not be needed to win the
+game.
+3 Input
+The input file format is the same as for parts 1 and 2. You may either ignore the MOVES: section of the input
+file, or consider the starting game state to be the state reached after processing all MOVES: in the input file.
+For this part of the project, your executable will be tested on input files with no moves. Example input files
+are shown in Section 6.
+2
+4 Output
+The idea is that your program will write, to standard output, a portion of an exchange file that can be
+appended to the input file.
+4.1 Unwinnable games
+For games that are not winnable, or are not winnable in the specified number of moves, your program should
+write
+# Game is not winnable within M moves
+to standard output, where M is replaced by the number of moves checked. Nothing else should be written to
+standard output.
+4.2 Winnable games
+For games that are winnable, your program should write to standard ouput
+# Game is winnable in M moves
+followed by a sequence of moves (in exchange format) of length M. If the input file has no moves specified,
+then appending this output to the input file should produce a file that, when run through your advance
+executable, has all valid moves and leads to a winning game configuration. Example outputs are shown in
+Section 6.
