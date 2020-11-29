@@ -1,0 +1,11 @@
+Introduction
+The purpose of this assignment is to give you lots of practice working with conditional logic.
+For this assignment you’ll create one class called CricketGame that is a simplified model of the
+game of cricket.
+Whoa, you say, but I don't know anything about cricket. Do not worry, until the day before
+yesterday neither did we! We just read about the rules on Wikipedia, made some simplifications,
+and wrote up a specification. In the past we have made assignments out of games like baseball
+and American football, so this semester we thought we'd level the playing field (haha) for the
+non-US students.
+As with our previous assignment, all you really need to do is implement the methods as specified
+and you'll be fine.
