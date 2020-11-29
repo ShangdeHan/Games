@@ -1,0 +1,104 @@
+1 Summary
+The semester-long project will be based on the card game Solitaire, also known as Klondike. For the first
+part, you must read an input file that describes a game configuration (possibly in the middle of a game),
+make sure the input file is valid, and display summary information about the input file. In later parts of the
+project, you will be required to do much more processing of the input file, and will likely need to read the
+game configuration into an appropriate data structure, so plan accordingly. For this part of the project, all
+source code must be C.
+Specifically, your Makefile must build an executable named check. When run, check should read an
+input file and write summary information to standard output. If the input file is invalid, then display an
+appropriate error message to standard error, that indicates why the input file is invalid. Otherwise, if the
+input file is valid, then the following should be written to standard output:
+Input file is valid
+C covered cards
+S stock cards
+W waste cards
+In the above, C indicates the total number of hidden cards (needed to be turned over before the game can
+be won), S indicates the number of remaining stock cards, and W indicates the number of waste cards (see
+Section 2 below). Example input files and their associated outputs are given in Section 6.
+Your check executable should accept a filename as the first and only command-line argument. If no
+filename is specified, then check should read from standard input. Thus, the following commands should be
+equivalent, assuming file infile.txt is present:
+./check infile.txt
+./check < infile.txt
+cat infile.txt | ./check
+2 Game overview
+Figure 1 shows a screenshot of an online Solitaire game (this is Google’s, which you can play for free). The
+game uses a standard 52-card deck, and the game uses the following terminology.
+• The tableau is the main playing area, comprising seven columns of cards. In the project specs, these
+will be numbered from left to right as columns 1 through 7. Each column contains zero or more covered
+cards (face down), followed by zero or more face up cards that must form a “pile”, where cards in a
+tableau pile are subject to the rule: a card may only be placed on a card with rank one higher, and
+opposite color. Additionally, if there are any covered cards, then they must be followed by at least one
+uncovered card. Kings may be played on any empty column. In Figure 1, column 1 contains a pile of
+four cards, column 2 is empty, column 3 contains two covered cards and a pile of three cards, and so
+on. Note there are a total of 15 covered cards in the tableau for this example
+• There are four foundations, one for each suit, that are built up in rank order starting from Aces (rank
+1). In Figure 1, the hearts foundation contains the Ace and two of hearts, the spades foundation
+contains the Ace of spades, and the remaining foundations are empty.
+• The stock contains cards which may be played. These are turned over, either one at a time or three at
+a time (depending on the variation of Klondike being played).
+• The waste contains turned over cards from the stock. The top of the waste may be played onto the
+tableau or one of the foundations, if such a move is legal. In Figure 1, the waste contains currently the
+three of clubs, and the eight of clubs (on top). There are no legal moves for the eight of clubs.
+For a more detailed overview of Klondike Solitaire, see the wikipedia page at https://en.wikipedia.org/
+wiki/Klondike_(solitaire).
+3 Input file format
+The input is a (mostly) free-form text file, meaning an arbitrary amount of whitespace (’ ’, ’\t’, ’\r’,
+and ’\n’ characters) may separate elements, unless otherwise specified. Comments, which start with a ’#’
+character, and end with a ’\n’ character, should be treated the same as a single ’\n’ character. The input
+file has the following sections, which start with the specified keyword, and must appear exactly in this order.
+1. The RULES: section indicates which variant of Solitaire is being played (this will be significant in later
+parts of the project). This section contains, in order:
+• “turn 1” or “turn 3”. This indicates if 1 or 3 cards should be turned over at a time from the
+stock to the waste.
+• “unlimited” or “limit N” where N is one of {0, 1, 2, . . . , 9}. This indicates the number of times
+that the waste can be “reset” back into the stock.
+2. The FOUNDATIONS: section indicates the current top card of each of the four foundations, in the order
+of clubs, diamonds, hearts, spades. Cards are always specified in the order of rank and then suit,
+which are single characters each with no space in between.
+• The rank is one of { ’A’, ’2’, ’3’, ’4’, ’5’, ’6’, ’7’, ’8’, ’9’, ’T’, ’J’, ’Q’, ’K’ }.
+2
+• The suit is one of { ’c’, ’d’, ’h’, ’s’ }, short for clubs, diamonds, hearts, and spades. Clubs
+and spades are black in color, while diamonds and hearts are red in color.
+For the foundations only, the rank may also be ’_’, indicating that the foundation is empty.
+3. The TABLEAU: section indicates the current status of the seven tableau columns. A column is specified
+on a single line, with one or more space characters between elements. A comment may appear at the
+end of a column line. A column line contains the following, in order:
+• Zero or more covered cards.
+• The ’|’ character, which serves to separate the covered cards from the uncovered ones.
+• Zero or more uncovered cards.
+Columns are specified in reverse order: column 7 first, then column 6, and so on, down to column 1.
+Blank lines and comment lines may appear between column lines.
+4. The STOCK: section, indicating both the waste and the remaining stock. This section contains, in order:
+• Zero or more cards in the waste. The last card in the waste is the top card.
+• The ’|’ character, which serves to separate the waste from the stock.
+• Zero or more cards in the stock. The first card in the stock is the top of the stock. Playing the
+next card(s) in the stock can be simulated by moving the ’|’ character to the right.
+Any amount of whitespace (including comments and newlines) may separate elements in this section.
+5. The MOVES: section. This will be specified in part 2.
+Example input files are given in Section 6.
+4 Invalid input files: what to check for
+When the input file is invalid (see discussion below), your check executable should write a descriptive and
+appropriate error message to standard error. If the error is due to an improperly-formatted input file, the
+error message should include the line number of the formatting error. The program may terminate after
+displaying the first error message.
+4.1 Missing or duplicate cards
+For extra points, check the initial game configuration for missing cards or duplicate cards. You may assume
+that all the appropriate cards are under the top card in each foundation. For example, if the 4 of hearts
+is the top of the hearts foundation, then this means the Ace, 2, and 3 of hearts are below it. If the Ace of
+hearts appears also in (say) the stock, then this would be considered a duplicated card. Similarly, if the 5 of
+hearts does not appear in the tableau, the stock, the waste, or the foundation, then this would be considered
+a missing card.
+4.2 Valid piles
+For extra points, check that the tableau piles are valid. This means, for each face-up card in a column except
+the first, it must have rank exactly one lower than the card before it, and opposite color.
+4.3 The MOVES section
+Your check executable does not need to verify the correctness of anything after the MOVES: keyword. Your
+check executable may stop processing the input file once the MOVES: keyword has been seen.
+3
+4.4 Formatting errors
+Input files with formatting errors, such as incorrect or out of order keywords, or invalid cards, should cause an
+appropriate error message to be generated. These messages should include the line number of the formatting
+error, to help users debug the input file. For example:
+Error near line 7: expecting ’TABLEAU:’
